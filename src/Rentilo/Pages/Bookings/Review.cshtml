@@ -1,0 +1,39 @@
+@page "{id:int}"
+@model Rentilo.Pages.Bookings.ReviewModel
+@{
+    ViewData["Title"] = "Leave a review";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <form method="post" class="form-card">
+                <span class="eyebrow">Review</span>
+                <h1 class="h3 mt-1">How was “@Model.Booking.Item.Title”?</h1>
+                <p class="text-muted">Rented @Display.DateRange(Model.Booking.StartDate, Model.Booking.EndDate). Your review is public and helps others.</p>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <fieldset class="mb-3">
+                    <legend class="form-label fs-6">Rating</legend>
+                    <div class="star-input" data-star-input role="radiogroup" aria-label="Rating">
+                        @for (var i = 1; i <= 5; i++)
+                        {
+                            <input type="radio" name="Rating" id="star-@i" value="@i" checked="@(Model.Rating == i)" />
+                            <label for="star-@i" data-value="@i" title="@i star@(i > 1 ? "s" : "")">★<span class="visually-hidden">@i</span></label>
+                        }
+                    </div>
+                    <span asp-validation-for="Rating" class="d-block"></span>
+                </fieldset>
+
+                <div class="mb-4">
+                    <label asp-for="Comment" class="form-label"></label>
+                    <textarea asp-for="Comment" class="form-control" rows="4" placeholder="Was it as described? Easy pick-up?"></textarea>
+                    <span asp-validation-for="Comment"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Publish review</button>
+                    <a class="btn btn-soft" asp-page="Index">Not now</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

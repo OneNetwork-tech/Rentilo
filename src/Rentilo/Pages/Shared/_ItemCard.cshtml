@@ -1,0 +1,22 @@
+@model ItemCard
+<a class="item-card" asp-page="/Items/Details" asp-route-id="@Model.Id">
+    <div class="item-media">
+        <partial name="_ItemImage" model="(Model.ImagePath, Model.Category, Model.Title)" />
+        <span class="tag">@Model.Category.Icon() @Model.Category.Name()</span>
+        @if (!Model.IsAvailable)
+        {
+            <span class="tag tag-unavailable">Paused</span>
+        }
+    </div>
+    <div class="item-body">
+        <div class="d-flex justify-content-between gap-2 align-items-start">
+            <h3 class="item-title">@Model.Title</h3>
+            @if (Model.ReviewCount > 0)
+            {
+                <span class="rating">★ @Model.Rating!.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) <span class="count">(@Model.ReviewCount)</span></span>
+            }
+        </div>
+        <div class="item-meta">📍 @Model.Location</div>
+        <div class="item-price">@Display.Money(Model.PricePerDay) <small>/ day</small></div>
+    </div>
+</a>

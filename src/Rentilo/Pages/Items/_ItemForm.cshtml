@@ -1,0 +1,66 @@
+@model ItemFormModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+<div class="mb-3">
+    <label asp-for="Input.Title" class="form-label"></label>
+    <input asp-for="Input.Title" class="form-control" placeholder="e.g. Cordless drill with bits" />
+    <span asp-validation-for="Input.Title"></span>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <label asp-for="Input.Category" class="form-label"></label>
+        <select asp-for="Input.Category" class="form-select">
+            @foreach (var category in Enum.GetValues<ItemCategory>())
+            {
+                <option value="@category">@category.Icon() @category.Name()</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Input.PricePerDay" class="form-label"></label>
+        <input asp-for="Input.PricePerDay" class="form-control" type="number" min="1" max="100000" step="1" />
+        <span asp-validation-for="Input.PricePerDay"></span>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Input.Description" class="form-label"></label>
+    <textarea asp-for="Input.Description" class="form-control" rows="6" placeholder="What's included, condition, pick-up details…"></textarea>
+    <span asp-validation-for="Input.Description"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Input.Location" class="form-label"></label>
+    <input asp-for="Input.Location" class="form-control" />
+    <div class="form-text">Shown publicly. Use your city and area, not your street address.</div>
+    <span asp-validation-for="Input.Location"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Input.Image" class="form-label"></label>
+    <input asp-for="Input.Image" type="file" class="form-control" accept="image/jpeg,image/png,image/webp,image/gif" data-image-input="#image-preview" />
+    <div class="form-text">JPEG, PNG, WebP or GIF, up to 5 MB.</div>
+    <span asp-validation-for="Input.Image"></span>
+    <div id="image-preview" class="image-preview mt-2" hidden="@string.IsNullOrEmpty(Model.CurrentImage)">
+        @if (!string.IsNullOrEmpty(Model.CurrentImage))
+        {
+            <img src="@Model.CurrentImage" alt="Current photo" />
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Model.CurrentImage))
+    {
+        <div class="form-check mt-2">
+            <input asp-for="Input.RemoveImage" class="form-check-input" />
+            <label asp-for="Input.RemoveImage" class="form-check-label"></label>
+        </div>
+    }
+</div>
+
+<div class="form-check form-switch mb-4">
+    <input asp-for="Input.IsAvailable" class="form-check-input" role="switch" />
+    <label asp-for="Input.IsAvailable" class="form-check-label"></label>
+    <span class="text-muted">(turn off to pause the listing)</span>
+</div>
+
+<button type="submit" class="btn btn-primary btn-lg">@Model.SubmitText</button>

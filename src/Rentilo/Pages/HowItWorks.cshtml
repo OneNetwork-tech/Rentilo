@@ -1,0 +1,49 @@
+@page
+@{
+    ViewData["Title"] = "How it works";
+}
+<div class="container">
+    <div class="page-header text-center">
+        <span class="eyebrow">How it works</span>
+        <h1 class="display-5">Share more. Buy less.</h1>
+        <p class="text-muted mx-auto prose">Rentilo connects people who need something for a few days with neighbours who already own it.</p>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-lg-6">
+            <div class="step">
+                <h2 class="h4 mb-3">🙋 Renting</h2>
+                <ol class="mb-0 d-grid gap-2">
+                    <li><strong>Search</strong> by keyword, category, location or price.</li>
+                    <li><strong>Pick your dates</strong> on the item page. You see the total price before you send anything.</li>
+                    <li><strong>Send a request.</strong> Nothing is charged; the owner confirms first.</li>
+                    <li>Once accepted, you'll see the owner's contact details to arrange pick-up.</li>
+                    <li>After the rental, <strong>leave a review</strong> so others know what to expect.</li>
+                </ol>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="step">
+                <h2 class="h4 mb-3">💸 Lending</h2>
+                <ol class="mb-0 d-grid gap-2">
+                    <li><strong>List an item</strong> with a photo, description and daily price. It's free.</li>
+                    <li><strong>Get requests</strong> in your dashboard and accept the ones that suit you.</li>
+                    <li>Accepting a request blocks those dates and declines overlapping requests automatically.</li>
+                    <li>Hand over the item, get it back, then <strong>mark it as returned</strong>.</li>
+                    <li>Pause a listing any time you need the item yourself.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-4"><div class="step"><h3 class="h6">Is payment handled on Rentilo?</h3><p class="text-muted mb-0">Not yet. Agree on payment when you meet (Swish works well). Prices on Rentilo are what you agree to when you book.</p></div></div>
+        <div class="col-md-4"><div class="step"><h3 class="h6">Can I cancel?</h3><p class="text-muted mb-0">Renters can withdraw a request any time and cancel an accepted booking until the day it starts.</p></div></div>
+        <div class="col-md-4"><div class="step"><h3 class="h6">What if something breaks?</h3><p class="text-muted mb-0">Talk to each other first. Describe the item's condition honestly and take photos at hand-over.</p></div></div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a class="btn btn-primary btn-lg" asp-page="/Items/Index">Start browsing</a>
+        <a class="btn btn-soft btn-lg ms-2" asp-page="/Items/Create">List an item</a>
+    </div>
+</div>

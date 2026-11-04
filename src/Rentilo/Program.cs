@@ -55,6 +55,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 // --- Application services -------------------------------------------------------------------
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<AccountDeletionService>();
 builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
 
 builder.Services.AddRazorPages(options =>

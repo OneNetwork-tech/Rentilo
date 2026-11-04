@@ -8,14 +8,17 @@ namespace Rentilo.Models;
 /// </summary>
 public class ApplicationUser : IdentityUser
 {
+    [PersonalData]
     [Required]
     [StringLength(100)]
     [Display(Name = "Full name")]
     public string FullName { get; set; } = string.Empty;
 
+    [PersonalData]
     [StringLength(100)]
     public string? City { get; set; }
 
+    [PersonalData]
     [StringLength(500)]
     public string? Bio { get; set; }
 

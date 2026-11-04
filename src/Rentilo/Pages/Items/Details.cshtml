@@ -1,0 +1,148 @@
+@page "{id:int}"
+@model Rentilo.Pages.Items.DetailsModel
+@{
+    var item = Model.Item;
+    ViewData["Title"] = item.Title;
+    ViewData["Description"] = $"Rent {item.Title} in {item.Location} for {Display.Money(item.PricePerDay)} per day on Rentilo.";
+    var reviewCount = Model.Reviews.Count;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-page="/Items/Index">Browse</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Items/Index" asp-route-category="@item.Category">@item.Category.Name()</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@item.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4 g-lg-5">
+        <div class="col-lg-7">
+            <div class="detail-media mb-4">
+                <partial name="_ItemImage" model="(item.ImagePath, item.Category, item.Title)" />
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge rounded-pill text-bg-light border">@item.Category.Icon() @item.Category.Name()</span>
+                @if (!item.IsAvailable)
+                {
+                    <span class="badge rounded-pill text-bg-dark">Paused – hidden from search</span>
+                }
+            </div>
+            <h1 class="h2 mb-2">@item.Title</h1>
+            <div class="d-flex flex-wrap gap-3 text-muted mb-4">
+                <span>📍 @item.Location</span>
+                @if (Model.AverageRating is { } avg)
+                {
+                    <span class="rating">★ @avg.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) <span class="count">(@reviewCount @(reviewCount == 1 ? "review" : "reviews"))</span></span>
+                }
+                <span>Listed @item.DateListed.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</span>
+            </div>
+
+            <h2 class="h5">About this item</h2>
+            <p class="description">@item.Description</p>
+
+            <h2 class="h5 mt-4">Owner</h2>
+            <a class="owner-card text-decoration-none text-body" asp-page="/Users/Profile" asp-route-id="@item.OwnerId">
+                <span class="avatar avatar-lg" aria-hidden="true">@item.Owner.Initials</span>
+                <span>
+                    <strong class="d-block">@item.Owner.FullName</strong>
+                    <span class="text-muted small">
+                        @(item.Owner.City is { } city ? $"{city} · " : "")Member since @item.Owner.DateJoined.ToString("yyyy") · @Model.OwnerItemCount @(Model.OwnerItemCount == 1 ? "listing" : "listings")
+                    </span>
+                </span>
+            </a>
+
+            <h2 class="h5 mt-5">Reviews</h2>
+            @if (reviewCount == 0)
+            {
+                <p class="text-muted">No reviews yet.</p>
+            }
+            else
+            {
+                <div>
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <div class="review">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="avatar avatar-sm" aria-hidden="true">@review.Author.Initials</span>
+                                <strong>@review.Author.FullName</strong>
+                                <span class="stars ms-auto" aria-label="@review.Rating out of 5 stars">@(new string('★', review.Rating))@(new string('☆', 5 - review.Rating))</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(review.Comment))
+                            {
+                                <p class="mb-1">@review.Comment</p>
+                            }
+                            <small class="text-muted">@review.CreatedAt.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</small>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <div class="booking-card">
+                <div class="d-flex align-items-baseline gap-1 mb-3">
+                    <span class="price">@Display.Money(item.PricePerDay)</span><span class="text-muted">/ day</span>
+                </div>
+
+                @if (Model.IsOwner)
+                {
+                    <p class="text-muted">This is your listing.</p>
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-primary" asp-page="/Items/Edit" asp-route-id="@item.Id">Edit listing</a>
+                        <a class="btn btn-soft" asp-page="/Dashboard/Requests">View booking requests</a>
+                    </div>
+                }
+                else if (!item.IsAvailable)
+                {
+                    <p class="text-muted mb-0">This item isn't available for rent right now.</p>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Book" data-booking-form data-price-per-day="@item.PricePerDay.ToString(System.Globalization.CultureInfo.InvariantCulture)" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label asp-for="Input.StartDate" class="form-label small"></label>
+                                <input asp-for="Input.StartDate" class="form-control" min="@Model.Today.ToString("yyyy-MM-dd")" data-start />
+                                <span asp-validation-for="Input.StartDate"></span>
+                            </div>
+                            <div class="col-6">
+                                <label asp-for="Input.EndDate" class="form-label small"></label>
+                                <input asp-for="Input.EndDate" class="form-control" min="@Model.Today.ToString("yyyy-MM-dd")" data-end />
+                                <span asp-validation-for="Input.EndDate"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Input.Message" class="form-label small"></label>
+                            <textarea asp-for="Input.Message" class="form-control" rows="2" placeholder="Hi! I'd like to use it for…"></textarea>
+                            <span asp-validation-for="Input.Message"></span>
+                        </div>
+                        <div class="price-summary mb-3" data-summary hidden>
+                            <div class="d-flex justify-content-between"><span>@Display.Money(item.PricePerDay) × <span data-days></span></span><strong data-total></strong></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Request to rent</button>
+                        <p class="text-muted small text-center mt-2 mb-0">You won't be charged. The owner confirms first.</p>
+                    </form>
+                }
+
+                @if (Model.BlockedRanges.Count > 0)
+                {
+                    <hr />
+                    <h2 class="h6">Already booked</h2>
+                    <ul class="blocked-list">
+                        @foreach (var range in Model.BlockedRanges.Take(8))
+                        {
+                            <li>@Display.DateRange(range.Start, range.End)</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

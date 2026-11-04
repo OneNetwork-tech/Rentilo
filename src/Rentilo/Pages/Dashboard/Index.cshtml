@@ -1,0 +1,65 @@
+@page
+@model Rentilo.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="container">
+    <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div>
+            <span class="eyebrow">Dashboard</span>
+            <h1>Hi @Model.FirstName 👋</h1>
+        </div>
+        <a class="btn btn-primary" asp-page="/Items/Create">+ New listing</a>
+    </div>
+    <partial name="_DashNav" />
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.ActiveListings</div><div class="label">Active listings</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.PendingCount</div><div class="label">Requests waiting for you</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.UpcomingAsOwner</div><div class="label">Upcoming rentals of your items</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Display.Money(Model.EarnedTotal)</div><div class="label">Earned so far</div></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <section class="panel h-100">
+                <div class="panel-header"><h2>Requests to respond to</h2><a asp-page="/Dashboard/Requests" class="small">All requests →</a></div>
+                @if (Model.LatestRequests.Count == 0)
+                {
+                    <p class="text-muted p-4 mb-0">No pending requests. When someone wants to rent your stuff, it shows up here.</p>
+                }
+                @foreach (var b in Model.LatestRequests)
+                {
+                    <div class="booking-row">
+                        <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                        <div class="booking-info">
+                            <strong class="d-block text-truncate">@b.Item.Title</strong>
+                            <span class="small text-muted">@b.Renter.FullName · @Display.DateRange(b.StartDate, b.EndDate) · @Display.Money(b.TotalPrice)</span>
+                        </div>
+                        <a class="btn btn-sm btn-soft" asp-page="/Dashboard/Requests">Respond</a>
+                    </div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-6">
+            <section class="panel h-100">
+                <div class="panel-header"><h2>Your upcoming rentals</h2><a asp-page="/Bookings/Index" class="small">All rentals →</a></div>
+                @if (Model.NextRentals.Count == 0)
+                {
+                    <p class="text-muted p-4 mb-0">Nothing booked. <a asp-page="/Items/Index">Find something to rent</a>.</p>
+                }
+                @foreach (var b in Model.NextRentals)
+                {
+                    <div class="booking-row">
+                        <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                        <div class="booking-info">
+                            <a class="fw-bold d-block text-truncate text-body text-decoration-none" asp-page="/Items/Details" asp-route-id="@b.ItemId">@b.Item.Title</a>
+                            <span class="small text-muted">@Display.DateRange(b.StartDate, b.EndDate)</span>
+                        </div>
+                        <partial name="_StatusBadge" model="b.Status" />
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+</div>

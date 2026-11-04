@@ -1,0 +1,9 @@
+@model (string? ImagePath, ItemCategory Category, string Title)
+@if (!string.IsNullOrEmpty(Model.ImagePath))
+{
+    <img src="@Model.ImagePath" alt="@Model.Title" loading="lazy" />
+}
+else
+{
+    <div class="placeholder-art cat-@((int)Model.Category)" role="img" aria-label="@Model.Category.Name()">@Model.Category.Icon()</div>
+}

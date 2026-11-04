@@ -1,0 +1,93 @@
+@page
+@model Rentilo.Pages.Items.IndexModel
+@{
+    ViewData["Title"] = Model.Category is { } c ? c.Name() : "Browse items";
+}
+
+<div class="container">
+    <div class="page-header">
+        <h1>@(Model.Category is { } cat ? $"{cat.Icon()} {cat.Name()}" : "Browse items")</h1>
+        <p class="text-muted mb-0">Rent from people near you. Pay per day, return when you're done.</p>
+    </div>
+
+    <div class="row g-4">
+        <aside class="col-lg-3">
+            <form method="get" class="filter-card" role="search" aria-label="Filter items">
+                <div class="mb-3">
+                    <label class="form-label" for="q">Search</label>
+                    <input class="form-control" id="q" name="q" value="@Model.Q" placeholder="Drill, tent, camera…" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="location">Location</label>
+                    <input class="form-control" id="location" name="location" value="@Model.Location" placeholder="City or area" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="category">Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">All categories</option>
+                        @foreach (var category in Enum.GetValues<ItemCategory>())
+                        {
+                            <option value="@category" selected="@(Model.Category == category)">@category.Icon() @category.Name()</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <span class="form-label d-block">Price per day (kr)</span>
+                    <div class="d-flex gap-2">
+                        <label class="visually-hidden" for="minPrice">Minimum price</label>
+                        <input class="form-control" id="minPrice" name="minPrice" type="number" min="0" step="1" value="@Model.MinPrice" placeholder="Min" />
+                        <label class="visually-hidden" for="maxPrice">Maximum price</label>
+                        <input class="form-control" id="maxPrice" name="maxPrice" type="number" min="0" step="1" value="@Model.MaxPrice" placeholder="Max" />
+                    </div>
+                </div>
+                <input type="hidden" name="sort" value="@Model.Sort" />
+                <button class="btn btn-primary w-100" type="submit">Apply filters</button>
+                @if (Model.HasFilters)
+                {
+                    <a class="btn btn-link w-100 mt-1" asp-page="/Items/Index">Clear all</a>
+                }
+            </form>
+        </aside>
+
+        <section class="col-lg-9" aria-live="polite">
+            <div class="result-bar">
+                <span class="text-muted">@Model.Pager.TotalCount @(Model.Pager.TotalCount == 1 ? "item" : "items")</span>
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <input type="hidden" name="q" value="@Model.Q" />
+                    <input type="hidden" name="location" value="@Model.Location" />
+                    <input type="hidden" name="category" value="@Model.Category" />
+                    <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+                    <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+                    <label for="sort" class="text-muted small text-nowrap">Sort by</label>
+                    <select id="sort" name="sort" class="form-select form-select-sm" data-autosubmit>
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.Sort))">Newest</option>
+                        <option value="price" selected="@(Model.Sort == "price")">Price: low to high</option>
+                        <option value="price_desc" selected="@(Model.Sort == "price_desc")">Price: high to low</option>
+                        <option value="rating" selected="@(Model.Sort == "rating")">Top rated</option>
+                    </select>
+                    <noscript><button class="btn btn-sm btn-soft" type="submit">Sort</button></noscript>
+                </form>
+            </div>
+
+            @if (Model.Items.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="emoji" aria-hidden="true">🔍</div>
+                    <h2 class="h5 mt-2">No items match your search</h2>
+                    <p class="text-muted">Try a different word, a wider area or fewer filters.</p>
+                    <a class="btn btn-soft" asp-page="/Items/Index">Show everything</a>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3 g-md-4 row-cols-2 row-cols-xl-3">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="col"><partial name="_ItemCard" model="item" /></div>
+                    }
+                </div>
+                <partial name="_Pager" model="Model.Pager" />
+            }
+        </section>
+    </div>
+</div>

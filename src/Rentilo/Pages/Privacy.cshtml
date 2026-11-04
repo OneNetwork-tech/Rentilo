@@ -1,8 +1,32 @@
-﻿@page
+@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Privacy policy";
 }
-<h1>@ViewData["Title"]</h1>
+<div class="container py-4">
+    <article class="prose">
+        <span class="eyebrow">Legal</span>
+        <h1>Privacy policy</h1>
+        <p class="text-muted">Last updated @DateTime.UtcNow.Year.</p>
 
-<p>Use this page to detail your site's privacy policy.</p>
+        <h2>What we store</h2>
+        <ul>
+            <li><strong>Account:</strong> your name, email address, password (stored only as a secure hash), and optionally your phone number, city and a short bio.</li>
+            <li><strong>Listings:</strong> the items you publish, including photos you upload.</li>
+            <li><strong>Bookings and reviews:</strong> the dates, prices and messages of rentals you request or receive, and reviews you write.</li>
+        </ul>
+
+        <h2>Who can see what</h2>
+        <ul>
+            <li>Your name, city, bio, listings and reviews are public.</li>
+            <li>Your email address is shared only with the other person of an <em>accepted</em> booking, so you can arrange pick-up.</li>
+            <li>Your phone number is never shown to other users.</li>
+        </ul>
+
+        <h2>Cookies</h2>
+        <p>We use a strictly necessary cookie to keep you signed in, and an anti-forgery cookie to protect forms. We don't use tracking or advertising cookies. Your light/dark theme choice is stored in your browser only.</p>
+
+        <h2>Your rights</h2>
+        <p>Under the GDPR you can access, download and delete your personal data at any time from <a asp-area="Identity" asp-page="/Account/Manage/PersonalData">Account settings → Personal data</a>.</p>
+    </article>
+</div>

@@ -1,0 +1,44 @@
+@page "{id}"
+@model Rentilo.Pages.Users.ProfileModel
+@{
+    var p = Model.Profile;
+    ViewData["Title"] = p.FullName;
+}
+<div class="container">
+    <div class="page-header d-flex align-items-center gap-3 flex-wrap">
+        <span class="avatar avatar-lg" aria-hidden="true">@p.Initials</span>
+        <div>
+            <h1>@p.FullName</h1>
+            <div class="text-muted">
+                @(p.City is { } city ? $"📍 {city} · " : "")Member since @p.DateJoined.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)
+                @if (Model.Rating is { } r)
+                {
+                    <span> · <span class="rating">★ @r.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) <span class="count">(@Model.ReviewCount)</span></span></span>
+                }
+                @if (Model.CompletedRentals > 0)
+                {
+                    <span> · @Model.CompletedRentals completed @(Model.CompletedRentals == 1 ? "rental" : "rentals")</span>
+                }
+            </div>
+        </div>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(p.Bio))
+    {
+        <p class="description prose mb-4">@p.Bio</p>
+    }
+
+    <h2 class="h5 mb-3">Listings (@Model.Items.Count)</h2>
+    @if (Model.Items.Count == 0)
+    {
+        <p class="text-muted">No active listings.</p>
+    }
+    else
+    {
+        <div class="row g-3 g-md-4 row-cols-2 row-cols-lg-4">
+            @foreach (var item in Model.Items)
+            {
+                <div class="col"><partial name="_ItemCard" model="item" /></div>
+            }
+        </div>
+    }
+</div>

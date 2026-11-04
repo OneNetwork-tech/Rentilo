@@ -1,52 +1,100 @@
-﻿<!DOCTYPE html>
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    var title = ViewData["Title"] as string;
+    var description = ViewData["Description"] as string ?? "Rentilo – rent things from people near you instead of buying them.";
+    var path = Context.Request.Path.Value ?? "/";
+    string Active(string prefix) => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Rentilo</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta name="description" content="@description" />
+    <meta name="color-scheme" content="light dark" />
+    <title>@(string.IsNullOrEmpty(title) ? "Rentilo – Rent anything nearby" : $"{title} · Rentilo")</title>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Rentilo.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-primary" href="#main">Skip to content</a>
+    <header class="site-nav sticky-top">
+        <nav class="navbar navbar-expand-lg py-2" aria-label="Main">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Rentilo</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand brand" asp-area="" asp-page="/Index"><span class="brand-mark" aria-hidden="true">R</span>Rentilo</a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto gap-lg-1 mt-2 mt-lg-0">
+                        <li class="nav-item"><a class="nav-link @Active("/Items")" asp-area="" asp-page="/Items/Index">Browse</a></li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("/Dashboard")" asp-area="" asp-page="/Dashboard/Index">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("/Bookings")" asp-area="" asp-page="/Bookings/Index">My rentals</a></li>
+                        }
+                        <li class="nav-item"><a class="nav-link @Active("/HowItWorks")" asp-area="" asp-page="/HowItWorks">How it works</a></li>
                     </ul>
-                    <partial name="_LoginPartial" />
+                    <div class="d-flex align-items-lg-center gap-2 flex-column flex-lg-row py-2 py-lg-0">
+                        <a class="btn btn-accent btn-sm" asp-area="" asp-page="/Items/Create">+ List an item</a>
+                        <button type="button" class="theme-toggle d-none d-lg-inline-grid" data-theme-toggle aria-label="Toggle theme">🌙</button>
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
+    <main id="main" role="main">
+        <partial name="_Flash" />
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
         <div class="container">
-            &copy; 2025 - Rentilo - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            <div class="row g-4">
+                <div class="col-md-5">
+                    <a class="brand mb-2" asp-area="" asp-page="/Index"><span class="brand-mark" aria-hidden="true">R</span>Rentilo</a>
+                    <p class="mb-0 mt-2">Rent what you need from people nearby. Earn from the things you already own. Better for your wallet and the planet.</p>
+                </div>
+                <div class="col-6 col-md-2 offset-md-1">
+                    <h3>Explore</h3>
+                    <ul>
+                        <li><a asp-area="" asp-page="/Items/Index">Browse items</a></li>
+                        <li><a asp-area="" asp-page="/Items/Create">List an item</a></li>
+                        <li><a asp-area="" asp-page="/HowItWorks">How it works</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h3>Account</h3>
+                    <ul>
+                        <li><a asp-area="" asp-page="/Dashboard/Index">Dashboard</a></li>
+                        <li><a asp-area="" asp-page="/Bookings/Index">My rentals</a></li>
+                        <li><a asp-area="Identity" asp-page="/Account/Manage/Index">Settings</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a asp-area="" asp-page="/Privacy">Privacy</a></li>
+                        <li><a asp-area="" asp-page="/Terms">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between flex-wrap gap-2 mt-4 pt-3 border-top">
+                <span>&copy; @DateTime.UtcNow.Year Rentilo</span>
+                <button type="button" class="btn btn-link p-0 text-decoration-none d-lg-none" data-theme-toggle>🌙</button>
+            </div>
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

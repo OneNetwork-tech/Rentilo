@@ -1,0 +1,23 @@
+@model Pager
+@if (Model.TotalPages > 1)
+{
+    var first = Math.Max(1, Model.Page - 2);
+    var last = Math.Min(Model.TotalPages, first + 4);
+    first = Math.Max(1, last - 4);
+    <nav aria-label="Pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                <a class="page-link" asp-all-route-data="Model.For(Model.Page - 1)" aria-label="Previous">‹</a>
+            </li>
+            @for (var p = first; p <= last; p++)
+            {
+                <li class="page-item @(p == Model.Page ? "active" : "")" aria-current="@(p == Model.Page ? "page" : null)">
+                    <a class="page-link" asp-all-route-data="Model.For(p)">@p</a>
+                </li>
+            }
+            <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                <a class="page-link" asp-all-route-data="Model.For(Model.Page + 1)" aria-label="Next">›</a>
+            </li>
+        </ul>
+    </nav>
+}

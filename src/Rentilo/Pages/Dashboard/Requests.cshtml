@@ -1,0 +1,88 @@
+@page
+@model Rentilo.Pages.Dashboard.RequestsModel
+@{
+    ViewData["Title"] = "Booking requests";
+}
+<div class="container">
+    <div class="page-header"><span class="eyebrow">Dashboard</span><h1>Booking requests</h1></div>
+    <partial name="_DashNav" />
+
+    <section class="panel mb-4">
+        <div class="panel-header"><h2>Waiting for your answer (@Model.Pending.Count)</h2></div>
+        @if (Model.Pending.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">You're all caught up.</p>
+        }
+        @foreach (var b in Model.Pending)
+        {
+            <div class="booking-row">
+                <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                <div class="booking-info">
+                    <a class="fw-bold d-block text-truncate text-body text-decoration-none" asp-page="/Items/Details" asp-route-id="@b.ItemId">@b.Item.Title</a>
+                    <span class="small text-muted">
+                        <a asp-page="/Users/Profile" asp-route-id="@b.RenterId">@b.Renter.FullName</a> · @Display.DateRange(b.StartDate, b.EndDate) (@Display.Days(b.Days)) · <strong>@Display.Money(b.TotalPrice)</strong>
+                    </span>
+                    @if (!string.IsNullOrEmpty(b.Message))
+                    {
+                        <div class="booking-note mt-1">“@b.Message”</div>
+                    }
+                </div>
+                <form method="post" class="booking-actions">
+                    <input type="hidden" name="bookingId" value="@b.Id" />
+                    <button class="btn btn-sm btn-primary" asp-page-handler="Accept">Accept</button>
+                    <button class="btn btn-sm btn-outline-secondary" asp-page-handler="Decline" data-confirm="Decline this request?">Decline</button>
+                </form>
+            </div>
+        }
+    </section>
+
+    <section class="panel mb-4">
+        <div class="panel-header"><h2>Accepted (@Model.Upcoming.Count)</h2></div>
+        @if (Model.Upcoming.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">No accepted bookings right now.</p>
+        }
+        @foreach (var b in Model.Upcoming)
+        {
+            <div class="booking-row">
+                <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                <div class="booking-info">
+                    <strong class="d-block text-truncate">@b.Item.Title</strong>
+                    <span class="small text-muted">@b.Renter.FullName · @b.Renter.Email · @Display.DateRange(b.StartDate, b.EndDate) · @Display.Money(b.TotalPrice)</span>
+                </div>
+                <partial name="_StatusBadge" model="b.Status" />
+                @if (b.StartDate <= Model.Today)
+                {
+                    <form method="post" class="booking-actions">
+                        <input type="hidden" name="bookingId" value="@b.Id" />
+                        <button class="btn btn-sm btn-soft" asp-page-handler="Complete">Mark as returned</button>
+                    </form>
+                }
+            </div>
+        }
+    </section>
+
+    @if (Model.History.Count > 0)
+    {
+        <section class="panel">
+            <div class="panel-header"><h2>History</h2></div>
+            @foreach (var b in Model.History)
+            {
+                <div class="booking-row">
+                    <div class="booking-info">
+                        <strong class="d-block text-truncate">@b.Item.Title</strong>
+                        <span class="small text-muted">@b.Renter.FullName · @Display.DateRange(b.StartDate, b.EndDate) · @Display.Money(b.TotalPrice)</span>
+                    </div>
+                    @if (b.Status == BookingStatus.Pending)
+                    {
+                        <span class="status status-closed">Expired</span>
+                    }
+                    else
+                    {
+                        <partial name="_StatusBadge" model="b.Status" />
+                    }
+                </div>
+            }
+        </section>
+    }
+</div>
