@@ -1,0 +1,8 @@
+# SITE_ADDRESS comes from .env:
+#   ":80"                 -> plain HTTP on the server's IP (for testing)
+#   "rentilo.example.com" -> automatic HTTPS certificate from Let's Encrypt
+#                            (the domain's DNS A record must point at the server first)
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	reverse_proxy web:8080
+}

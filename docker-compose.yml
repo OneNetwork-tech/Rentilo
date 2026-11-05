@@ -28,7 +28,9 @@ services:
       - "8080:8080"
     volumes:
       - uploads:/app/wwwroot/uploads
+      - keys:/app/keys
 
 volumes:
   pgdata:
   uploads:
+  keys:

@@ -1,0 +1,90 @@
+# Rentilo production stack: app + PostgreSQL + Caddy (automatic HTTPS) + nightly backups.
+# Used on the server by remote-up.sh; configuration comes from .env in the same folder.
+name: rentilo
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rentilo
+      POSTGRES_USER: rentilo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rentilo -d rentilo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+
+  web:
+    # Built on your PC by deploy.ps1 / deploy.sh and loaded onto the server.
+    image: ${RENTILO_IMAGE:-rentilo:latest}
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=rentilo;Username=rentilo;Password=${POSTGRES_PASSWORD};Gss Encryption Mode=Disable"
+      Database__MigrateOnStartup: "true"
+      Database__SeedDemoData: "${SEED_DEMO_DATA:-false}"
+      Identity__RequireConfirmedAccount: "${REQUIRE_CONFIRMED_ACCOUNT:-false}"
+      Email__Smtp__Host: "${SMTP_HOST:-}"
+      Email__Smtp__Port: "${SMTP_PORT:-587}"
+      Email__Smtp__EnableSsl: "${SMTP_ENABLE_SSL:-true}"
+      Email__Smtp__UserName: "${SMTP_USER:-}"
+      Email__Smtp__Password: "${SMTP_PASSWORD:-}"
+      Email__Smtp__From: "${SMTP_FROM:-no-reply@rentilo.local}"
+    volumes:
+      - uploads:/app/wwwroot/uploads
+      - keys:/app/keys
+    # No published ports: only Caddy talks to the app.
+    logging: *logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [web]
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging: *logging
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    entrypoint: ["sh", "/backup.sh"]
+    environment:
+      PGHOST: db
+      PGDATABASE: rentilo
+      PGUSER: rentilo
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      TZ: Europe/Stockholm
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ./backups:/backups
+      - uploads:/uploads:ro
+    logging: *logging
+
+volumes:
+  pgdata:
+  uploads:
+  keys:
+  caddy_data:
+  caddy_config:

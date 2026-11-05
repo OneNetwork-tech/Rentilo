@@ -63,3 +63,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: docker build -t rentilo:ci .
+      - name: Production compose file is valid
+        run: POSTGRES_PASSWORD=ci docker compose -f deploy/docker-compose.prod.yml config -q
+      - name: Shell scripts pass shellcheck
+        run: |
+          shellcheck -S warning deploy/server-setup.sh deploy/remote-up.sh deploy/deploy.sh
+          shellcheck -s sh -S warning deploy/backup.sh

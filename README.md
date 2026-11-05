@@ -27,6 +27,10 @@ Open <http://localhost:8080>. The database is migrated on startup and demo data 
 
 **Demo accounts** (password `Rentilo123!`): `anna@rentilo.dev`, `erik@rentilo.dev`, `sara@rentilo.dev`.
 
+## Deploying to a server
+
+See **[deploy/README.md](deploy/README.md)**. One PowerShell command (`.\deploy\deploy.ps1`) builds the app with Docker Desktop and deploys it over SSH, with HTTPS, PostgreSQL and nightly backups.
+
 ## Local development
 
 Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download) and PostgreSQL 14 or newer.
