@@ -1,0 +1,53 @@
+@page
+@model Rentilo.Pages.Admin.ItemsModel
+@{
+    ViewData["Title"] = "Admin · Listings";
+}
+<div class="container">
+    <partial name="_AdminNav" />
+    <form method="get" class="d-flex gap-2 flex-wrap mb-3" role="search">
+        <label class="visually-hidden" for="q">Search</label>
+        <input id="q" name="q" value="@Model.Q" class="form-control w-auto flex-grow-1" placeholder="Title, owner name or email" />
+        <div class="form-check align-self-center">
+            <input class="form-check-input" type="checkbox" id="hiddenOnly" name="hiddenOnly" value="true" checked="@Model.HiddenOnly" />
+            <label class="form-check-label" for="hiddenOnly">Hidden only</label>
+        </div>
+        <button class="btn btn-primary">Search</button>
+    </form>
+    <section class="panel">
+        @if (Model.Items.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">No listings found.</p>
+        }
+        @foreach (var i in Model.Items)
+        {
+            <div class="booking-row">
+                <div class="booking-thumb"><partial name="_ItemImage" model="(i.ImagePath, i.Category, i.Title)" /></div>
+                <div class="booking-info">
+                    <a class="fw-bold text-body" asp-page="/Items/Details" asp-route-id="@i.Id">@i.Title</a>
+                    <span class="small text-muted d-block">@i.Owner.FullName (@i.Owner.Email) · @Display.Money(i.PricePerDay)/day · @i.Location</span>
+                    @if (i.IsHiddenByAdmin)
+                    {
+                        <span class="small text-danger d-block">Hidden: @i.ModerationNote</span>
+                    }
+                </div>
+                @if (i.IsHiddenByAdmin)
+                {
+                    <form method="post" asp-page-handler="Unhide" asp-route-q="@Model.Q" asp-route-hiddenOnly="@Model.HiddenOnly">
+                        <input type="hidden" name="itemId" value="@i.Id" />
+                        <button class="btn btn-sm btn-soft">Unhide</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Hide" asp-route-q="@Model.Q" asp-route-hiddenOnly="@Model.HiddenOnly" class="d-flex gap-2">
+                        <input type="hidden" name="itemId" value="@i.Id" />
+                        <label class="visually-hidden" for="note-@i.Id">Reason</label>
+                        <input id="note-@i.Id" name="note" class="form-control form-control-sm" placeholder="Reason" maxlength="300" />
+                        <button class="btn btn-sm btn-outline-danger text-nowrap" data-confirm="Hide this listing?">Hide</button>
+                    </form>
+                }
+            </div>
+        }
+    </section>
+</div>

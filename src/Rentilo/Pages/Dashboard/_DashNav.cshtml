@@ -1,0 +1,11 @@
+@{
+    var path = Context.Request.Path.Value ?? "";
+    string Active(string p) => path.Equals(p, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    var pending = ViewData["PendingCount"] as int? ?? 0;
+}
+<nav class="dash-nav" aria-label="Dashboard">
+    <a class="@Active("/Dashboard")" asp-page="/Dashboard/Index">Overview</a>
+    <a class="@Active("/Dashboard/Listings")" asp-page="/Dashboard/Listings">My listings</a>
+    <a class="@Active("/Dashboard/Requests")" asp-page="/Dashboard/Requests">Requests @if (pending > 0) { <span class="badge rounded-pill text-bg-danger nav-badge">@pending</span> }</a>
+    <a asp-page="/Bookings/Index">My rentals</a>
+</nav>

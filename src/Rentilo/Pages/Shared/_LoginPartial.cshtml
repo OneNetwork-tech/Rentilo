@@ -1,0 +1,35 @@
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    var name = user?.FullName ?? User.Identity?.Name ?? "Account";
+    <div class="dropdown">
+        <button class="btn btn-link text-decoration-none d-flex align-items-center gap-2 p-1 text-body" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="avatar avatar-sm" aria-hidden="true">@ApplicationUser.GetInitials(name)</span>
+            <span class="fw-semibold">@name.Split(' ')[0]</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><a class="dropdown-item" asp-area="" asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-page="/Dashboard/Listings">My listings</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-page="/Bookings/Index">My rentals</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-page="/Bookings/Messages">Messages</a></li>
+            @if (user is not null)
+            {
+                <li><a class="dropdown-item" asp-area="" asp-page="/Users/Profile" asp-route-id="@user.Id">Public profile</a></li>
+            }
+            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Account settings</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post">
+                    <button type="submit" class="dropdown-item">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
+else
+{
+    <a class="btn btn-link text-decoration-none text-body fw-semibold" asp-area="Identity" asp-page="/Account/Login">Log in</a>
+    <a class="btn btn-outline-primary btn-sm" asp-area="Identity" asp-page="/Account/Register">Sign up</a>
+}

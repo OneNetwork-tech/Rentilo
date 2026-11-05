@@ -1,0 +1,102 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "";
+}
+
+<section class="hero">
+    <div class="container py-5">
+        <div class="row align-items-center g-5 py-lg-4">
+            <div class="col-lg-7">
+                <span class="eyebrow">Borrow · Rent · Share</span>
+                <h1 class="mt-2 mb-3">Rent anything from <span class="hero-highlight">people nearby</span>.</h1>
+                <p class="lead mb-4">Why buy a drill you'll use twice? Find tools, gear and gadgets in your neighbourhood, or earn money from the things you already own.</p>
+
+                <form method="get" asp-page="/Items/Index" class="search-panel d-flex flex-column flex-md-row gap-1" role="search">
+                    <label class="visually-hidden" for="hero-q">What do you need?</label>
+                    <input id="hero-q" name="q" class="form-control form-control-lg" placeholder="What do you need? e.g. tent, drill…" />
+                    <span class="divider d-none d-md-block"></span>
+                    <label class="visually-hidden" for="hero-loc">Where?</label>
+                    <input id="hero-loc" name="location" class="form-control form-control-lg" placeholder="City or area" />
+                    <button class="btn btn-primary btn-lg px-4" type="submit">Search</button>
+                </form>
+
+                <div class="d-flex gap-4 mt-4 stat-strip">
+                    <div><strong>@Model.ItemCount</strong>items to rent</div>
+                    <div><strong>@Math.Max(Model.CityCount, 1)</strong>@(Model.CityCount == 1 ? "city" : "cities")</div>
+                    <div><strong>0 kr</strong>to list</div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block" aria-hidden="true">
+                <div class="hero-art">
+                    @foreach (var c in new[] { ItemCategory.Tools, ItemCategory.Outdoor, ItemCategory.Photography, ItemCategory.Sports, ItemCategory.Party, ItemCategory.Music, ItemCategory.Vehicles, ItemCategory.Home, ItemCategory.Electronics })
+                    {
+                        <div class="hero-tile cat-@((int)c)">@c.Icon()</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section pb-0">
+    <div class="container">
+        <div class="section-title">
+            <div><span class="eyebrow">Categories</span><h2>Find what you need</h2></div>
+        </div>
+        <div class="category-grid">
+            @foreach (var category in Enum.GetValues<ItemCategory>())
+            {
+                <a class="category-chip" asp-page="/Items/Index" asp-route-category="@category">
+                    <span class="emoji" aria-hidden="true">@category.Icon()</span><span>@category.Name()</span>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <div><span class="eyebrow">Just listed</span><h2>Fresh near you</h2></div>
+            <a asp-page="/Items/Index" class="fw-semibold text-decoration-none">See all →</a>
+        </div>
+        @if (Model.Latest.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="emoji" aria-hidden="true">📦</div>
+                <h3 class="h5 mt-2">Nothing listed yet</h3>
+                <p class="text-muted">Be the first. It takes two minutes.</p>
+                <a class="btn btn-primary" asp-page="/Items/Create">List an item</a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-3 g-md-4 row-cols-2 row-cols-lg-4">
+                @foreach (var item in Model.Latest)
+                {
+                    <div class="col"><partial name="_ItemCard" model="item" /></div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="section-title"><div><span class="eyebrow">How it works</span><h2>Renting made simple</h2></div></div>
+        <div class="row g-4">
+            <div class="col-md-4"><div class="step"><div class="step-num">1</div><h3 class="h5">Find it</h3><p class="text-muted mb-0">Search by what you need and where you are. Every listing shows the daily price up front.</p></div></div>
+            <div class="col-md-4"><div class="step"><div class="step-num">2</div><h3 class="h5">Request dates</h3><p class="text-muted mb-0">Pick your days and send a request. The owner accepts, and the dates are yours.</p></div></div>
+            <div class="col-md-4"><div class="step"><div class="step-num">3</div><h3 class="h5">Pick up &amp; review</h3><p class="text-muted mb-0">Collect the item, use it, return it, then leave a review to help the community.</p></div></div>
+        </div>
+
+        <div class="cta-band p-4 p-md-5 mt-5 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+                <h2 class="h3 mb-1">Got things gathering dust?</h2>
+                <p class="mb-0 text-white-75">List them on Rentilo for free and earn every time someone rents them.</p>
+            </div>
+            <a class="btn btn-light btn-lg fw-bold" asp-page="/Items/Create">Start earning</a>
+        </div>
+    </div>
+</section>

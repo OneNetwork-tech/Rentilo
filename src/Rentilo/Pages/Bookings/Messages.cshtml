@@ -1,0 +1,43 @@
+@page
+@model Rentilo.Pages.Bookings.MessagesModel
+@{
+    ViewData["Title"] = "Messages";
+}
+<div class="container">
+    <div class="page-header"><span class="eyebrow">Inbox</span><h1>Messages</h1></div>
+    <section class="panel">
+        @if (Model.Conversations.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">No conversations yet. Each booking request gets its own conversation with the owner.</p>
+        }
+        @foreach (var c in Model.Conversations)
+        {
+            var b = c.Booking;
+            var other = c.IAmOwner ? b.Renter : b.Item.Owner;
+            <a class="booking-row conversation-row text-body text-decoration-none @(c.Unread > 0 ? "unread" : "")" asp-page="Conversation" asp-route-id="@b.Id">
+                <span class="avatar" aria-hidden="true">@other.Initials</span>
+                <span class="booking-info">
+                    <span class="d-flex justify-content-between gap-2">
+                        <strong class="text-truncate">@other.FullName · @b.Item.Title</strong>
+                        <small class="text-muted text-nowrap">@((c.Last?.SentAt ?? b.CreatedAt).ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture))</small>
+                    </span>
+                    <span class="small text-muted d-block text-truncate">
+                        @if (c.Last is not null)
+                        {
+                            @(c.Last.SenderId == other.Id ? "" : "You: ")@c.Last.Body
+                        }
+                        else
+                        {
+                            @($"{(c.IAmOwner ? "Request" : "Your request")} for {Display.DateRange(b.StartDate, b.EndDate)}")
+                        }
+                    </span>
+                </span>
+                @if (c.Unread > 0)
+                {
+                    <span class="badge rounded-pill text-bg-danger">@c.Unread</span>
+                }
+                <partial name="_StatusBadge" model="b.Status" />
+            </a>
+        }
+    </section>
+</div>

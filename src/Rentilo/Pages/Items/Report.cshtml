@@ -1,0 +1,37 @@
+@page "{id:int}"
+@model Rentilo.Pages.Items.ReportModel
+@{
+    ViewData["Title"] = "Report listing";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <form method="post" class="form-card">
+                <span class="eyebrow">Report</span>
+                <h1 class="h3 mt-1">What's wrong with “@Model.Item.Title”?</h1>
+                <p class="text-muted">Reports are anonymous to the owner and go to the Rentilo moderators.</p>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+                <fieldset class="mb-3">
+                    <legend class="form-label fs-6">Reason</legend>
+                    @foreach (var reason in Enum.GetValues<ReportReason>())
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="Reason" id="reason-@reason" value="@reason" checked="@(Model.Reason == reason)" />
+                            <label class="form-check-label" for="reason-@reason">@reason.Name()</label>
+                        </div>
+                    }
+                    <span asp-validation-for="Reason" class="d-block"></span>
+                </fieldset>
+                <div class="mb-4">
+                    <label asp-for="Details" class="form-label"></label>
+                    <textarea asp-for="Details" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Details"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Send report</button>
+                    <a class="btn btn-soft" asp-page="Details" asp-route-id="@Model.Item.Id">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

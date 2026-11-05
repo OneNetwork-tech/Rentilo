@@ -1,0 +1,40 @@
+@page
+@model Rentilo.Pages.Dashboard.ListingsModel
+@{
+    ViewData["Title"] = "My listings";
+}
+<div class="container">
+    <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div><span class="eyebrow">Dashboard</span><h1>My listings</h1></div>
+        <a class="btn btn-primary" asp-page="/Items/Create">+ New listing</a>
+    </div>
+    <partial name="_DashNav" />
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="emoji" aria-hidden="true">🧰</div>
+            <h2 class="h5 mt-2">You haven't listed anything yet</h2>
+            <p class="text-muted">Turn the things you rarely use into income.</p>
+            <a class="btn btn-primary" asp-page="/Items/Create">List your first item</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 g-md-4 row-cols-2 row-cols-lg-3 row-cols-xl-4">
+            @foreach (var item in Model.Items)
+            {
+                <div class="col d-flex flex-column gap-2">
+                    <partial name="_ItemCard" model="item" />
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-soft flex-fill" asp-page="/Items/Edit" asp-route-id="@item.Id">Edit</a>
+                        @if (Model.PendingByItem.TryGetValue(item.Id, out var n))
+                        {
+                            <a class="btn btn-sm btn-accent flex-fill" asp-page="/Dashboard/Requests">@n @(n == 1 ? "request" : "requests")</a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,42 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+<h2 class="h4 mb-1">Profile</h2>
+<p class="text-muted">Your name, city and bio are shown on your public profile. Your phone number is never shown.</p>
+<partial name="_StatusMessage" for="StatusMessage" />
+<form id="profile-form" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Username" class="form-label">Email (username)</label>
+            <input asp-for="Username" class="form-control" disabled />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Input.FullName" class="form-label"></label>
+            <input asp-for="Input.FullName" class="form-control" autocomplete="name" />
+            <span asp-validation-for="Input.FullName"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Input.City" class="form-label"></label>
+            <input asp-for="Input.City" class="form-control" placeholder="e.g. Stockholm" />
+            <span asp-validation-for="Input.City"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Input.PhoneNumber" class="form-label"></label>
+            <input asp-for="Input.PhoneNumber" class="form-control" autocomplete="tel" />
+            <span asp-validation-for="Input.PhoneNumber"></span>
+        </div>
+        <div class="col-12">
+            <label asp-for="Input.Bio" class="form-label"></label>
+            <textarea asp-for="Input.Bio" class="form-control" rows="3" placeholder="A few words about you"></textarea>
+            <span asp-validation-for="Input.Bio"></span>
+        </div>
+    </div>
+    <button id="update-profile-button" type="submit" class="btn btn-primary mt-4">Save profile</button>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Rentilo: user-uploaded images
+src/Rentilo/wwwroot/uploads/
+
+# Rentilo deployment secrets and build output
+.env
+deploy/.env
+deploy/out/

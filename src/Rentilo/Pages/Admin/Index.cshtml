@@ -1,0 +1,64 @@
+@page
+@model Rentilo.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Admin";
+}
+<div class="container">
+    <partial name="_AdminNav" />
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.Open.Sum(g => g.Reports.Count)</div><div class="label">Open reports</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.UserCount</div><div class="label">Users</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.ItemCount</div><div class="label">Listings (@Model.HiddenCount hidden)</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="value">@Model.BookingCount</div><div class="label">Bookings</div></div></div>
+    </div>
+
+    <section class="panel mb-4">
+        <div class="panel-header"><h2>Reported listings</h2></div>
+        @if (Model.Open.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">No open reports. 🎉</p>
+        }
+        @foreach (var g in Model.Open)
+        {
+            <div class="booking-row align-items-start">
+                <div class="booking-thumb"><partial name="_ItemImage" model="(g.Item.ImagePath, g.Item.Category, g.Item.Title)" /></div>
+                <div class="booking-info">
+                    <a class="fw-bold text-body" asp-page="/Items/Details" asp-route-id="@g.Item.Id">@g.Item.Title</a>
+                    <span class="small text-muted d-block">by @g.Item.Owner.FullName · @g.Reports.Count @(g.Reports.Count == 1 ? "report" : "reports")@(g.Item.IsHiddenByAdmin ? " · already hidden" : "")</span>
+                    <ul class="small mb-0 mt-1 ps-3">
+                        @foreach (var r in g.Reports)
+                        {
+                            <li><strong>@r.Reason.Name()</strong> – @r.Reporter.FullName@(string.IsNullOrEmpty(r.Details) ? "" : $": “{r.Details}”")</li>
+                        }
+                    </ul>
+                </div>
+                <div class="d-flex flex-column gap-2 admin-actions">
+                    <form method="post" asp-page-handler="Hide" class="d-flex gap-2">
+                        <input type="hidden" name="itemId" value="@g.Item.Id" />
+                        <label class="visually-hidden" for="note-@g.Item.Id">Note to owner</label>
+                        <input id="note-@g.Item.Id" name="note" class="form-control form-control-sm" placeholder="Reason shown to owner" maxlength="300" />
+                        <button class="btn btn-sm btn-danger text-nowrap">Hide listing</button>
+                    </form>
+                    <form method="post" asp-page-handler="Dismiss">
+                        <input type="hidden" name="itemId" value="@g.Item.Id" />
+                        <button class="btn btn-sm btn-soft w-100">Dismiss reports</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </section>
+
+    @if (Model.RecentlyResolved.Count > 0)
+    {
+        <section class="panel">
+            <div class="panel-header"><h2>Recently resolved</h2></div>
+            @foreach (var r in Model.RecentlyResolved)
+            {
+                <div class="booking-row small">
+                    <span class="booking-info"><a asp-page="/Items/Details" asp-route-id="@r.ItemId">@r.Item.Title</a> · @r.Reason.Name()</span>
+                    <span class="text-muted">@r.Resolution · @r.ResolvedAt!.Value.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)</span>
+                </div>
+            }
+        </section>
+    }
+</div>

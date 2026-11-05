@@ -1,0 +1,51 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Log in";
+}
+<div class="container">
+    <div class="auth-wrap">
+        <div class="form-card">
+            <h1 class="mb-1">Welcome back</h1>
+            <p class="text-muted mb-4">Log in to manage your rentals and listings.</p>
+            <form id="account" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label">Email</label>
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <span asp-validation-for="Input.Email"></span>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <label asp-for="Input.Password" class="form-label">Password</label>
+                        <a id="forgot-password" class="small" asp-page="./ForgotPassword">Forgot password?</a>
+                    </div>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" />
+                    <span asp-validation-for="Input.Password"></span>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" asp-for="Input.RememberMe" />
+                    <label class="form-check-label" asp-for="Input.RememberMe">Keep me logged in</label>
+                </div>
+                <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+            </form>
+            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+            {
+                <div class="text-center text-muted small my-3">or</div>
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="d-grid gap-2">
+                    @foreach (var provider in Model.ExternalLogins!)
+                    {
+                        <button type="submit" class="btn btn-soft" name="provider" value="@provider.Name">Continue with @provider.DisplayName</button>
+                    }
+                </form>
+            }
+        </div>
+        <p class="text-center mt-3 text-muted">
+            New to Rentilo? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a><br />
+            <a id="resend-confirmation" class="small" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>
+        </p>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

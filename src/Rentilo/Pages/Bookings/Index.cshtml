@@ -1,0 +1,81 @@
+@page
+@model Rentilo.Pages.Bookings.IndexModel
+@{
+    ViewData["Title"] = "My rentals";
+}
+<div class="container">
+    <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div><span class="eyebrow">Renting</span><h1>My rentals</h1></div>
+        <a class="btn btn-soft" asp-page="/Items/Index">Find something to rent</a>
+    </div>
+
+    <section class="panel mb-4">
+        <div class="panel-header"><h2>Upcoming &amp; pending</h2></div>
+        @if (Model.Active.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">No upcoming rentals. <a asp-page="/Items/Index">Browse items</a> to get started.</p>
+        }
+        @foreach (var b in Model.Active)
+        {
+            <div class="booking-row">
+                <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                <div class="booking-info">
+                    <a class="fw-bold d-block text-truncate text-body text-decoration-none" asp-page="/Items/Details" asp-route-id="@b.ItemId">@b.Item.Title</a>
+                    <span class="small text-muted">@Display.DateRange(b.StartDate, b.EndDate) (@Display.Days(b.Days)) · @Display.Money(b.TotalPrice) · from @b.Item.Owner.FullName</span>
+                    @if (b.Status == BookingStatus.Accepted)
+                    {
+                        <div class="small mt-1">📍 @b.Item.Location · Contact: <a asp-page="/Bookings/Conversation" asp-route-id="@b.Id">message</a> or <a href="mailto:@b.Item.Owner.Email">@b.Item.Owner.Email</a></div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted mt-1">Waiting for the owner to respond.</div>
+                    }
+                </div>
+                <partial name="_StatusBadge" model="b.Status" />
+                <div class="booking-actions">
+                    <a class="btn btn-sm btn-soft" asp-page="/Bookings/Conversation" asp-route-id="@b.Id">Message</a>
+                    @if (b.Status == BookingStatus.Pending || b.StartDate > Model.Today)
+                    {
+                        <form method="post" asp-page-handler="Cancel">
+                            <input type="hidden" name="bookingId" value="@b.Id" />
+                            <button class="btn btn-sm btn-outline-secondary" data-confirm="Cancel this booking?">@(b.Status == BookingStatus.Pending ? "Withdraw" : "Cancel")</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+    @if (Model.Past.Count > 0)
+    {
+        <section class="panel">
+            <div class="panel-header"><h2>Past &amp; closed</h2></div>
+            @foreach (var b in Model.Past)
+            {
+                <div class="booking-row">
+                    <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                    <div class="booking-info">
+                        <a class="fw-bold d-block text-truncate text-body text-decoration-none" asp-page="/Items/Details" asp-route-id="@b.ItemId">@b.Item.Title</a>
+                        <span class="small text-muted">@Display.DateRange(b.StartDate, b.EndDate) · @Display.Money(b.TotalPrice)</span>
+                    </div>
+                    @if (b.Status == BookingStatus.Pending)
+                    {
+                        <span class="status status-closed">Expired</span>
+                    }
+                    else
+                    {
+                        <partial name="_StatusBadge" model="b.Status" />
+                    }
+                    @if (Model.Rules.CanReview(b))
+                    {
+                        <a class="btn btn-sm btn-accent" asp-page="/Bookings/Review" asp-route-id="@b.Id">Leave a review</a>
+                    }
+                    else if (b.Review is not null)
+                    {
+                        <span class="stars small" aria-label="You rated @b.Review.Rating out of 5">@(new string('★', b.Review.Rating))</span>
+                    }
+                </div>
+            }
+        </section>
+    }
+</div>

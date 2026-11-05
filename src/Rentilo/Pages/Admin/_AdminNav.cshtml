@@ -1,0 +1,11 @@
+@{
+    var path = Context.Request.Path.Value ?? "";
+    string Active(string p) => path.Equals(p, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<div class="page-header"><span class="eyebrow">Admin</span><h1>Moderation</h1></div>
+<nav class="dash-nav" aria-label="Admin">
+    <a class="@Active("/Admin")" asp-page="/Admin/Index">Reports</a>
+    <a class="@Active("/Admin/Items")" asp-page="/Admin/Items">Listings</a>
+    <a class="@Active("/Admin/Users")" asp-page="/Admin/Users">Users</a>
+    <a class="@Active("/Admin/Reviews")" asp-page="/Admin/Reviews">Reviews</a>
+</nav>
