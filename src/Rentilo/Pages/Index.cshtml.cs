@@ -13,7 +13,7 @@ public class IndexModel(ApplicationDbContext db) : PageModel
 
     public async Task OnGetAsync()
     {
-        var available = db.Items.AsNoTracking().Where(i => i.IsAvailable);
+        var available = db.Items.AsNoTracking().Listed();
         Latest = await available.OrderByDescending(i => i.DateListed).ToCards().Take(8).ToListAsync();
         ItemCount = await available.CountAsync();
         CityCount = await db.Users.Where(u => u.City != null).Select(u => u.City).Distinct().CountAsync();

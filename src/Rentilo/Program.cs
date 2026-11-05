@@ -39,7 +39,13 @@ builder.Services
         options.Lockout.MaxFailedAccessAttempts = 5;
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Re-check login cookies against the database every few minutes, so locked users are signed out quickly.
+builder.Services.Configure<SecurityStampValidatorOptions>(o => o.ValidationInterval = TimeSpan.FromMinutes(5));
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", p => p.RequireRole(Roles.Admin));
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -62,11 +68,18 @@ if (!string.IsNullOrEmpty(keysPath))
 
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Email:Smtp"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<EmailQueue>();
+builder.Services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
+builder.Services.AddHostedService<EmailBackgroundSender>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<INotifier, EmailNotifier>();
 
 // --- Application services -------------------------------------------------------------------
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<BookingService>();
 builder.Services.AddScoped<AccountDeletionService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<ModerationService>();
 builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
 
 builder.Services.AddRazorPages(options =>
@@ -76,6 +89,8 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizePage("/Items/Create");
     options.Conventions.AuthorizePage("/Items/Edit");
     options.Conventions.AuthorizePage("/Items/Delete");
+    options.Conventions.AuthorizePage("/Items/Report");
+    options.Conventions.AuthorizeFolder("/Admin", "Admin");
 });
 
 builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>("database");
@@ -100,6 +115,12 @@ if (app.Configuration.GetValue("Database:SeedDemoData", false))
 {
     using var scope = app.Services.CreateScope();
     await SeedData.SeedDemoDataAsync(scope.ServiceProvider);
+}
+if (app.Configuration.GetValue("Database:MigrateOnStartup", false) || app.Configuration.GetValue("Database:SeedDemoData", false))
+{
+    // Only when we know the schema exists (tests and manual setups create it themselves).
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<ModerationService>().SyncAdminsAsync();
 }
 
 // --- HTTP pipeline ---------------------------------------------------------------------------

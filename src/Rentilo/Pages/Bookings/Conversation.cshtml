@@ -1,0 +1,66 @@
+@page "{id:int}"
+@model Rentilo.Pages.Bookings.ConversationModel
+@{
+    var b = Model.Booking;
+    ViewData["Title"] = $"Messages · {b.Item.Title}";
+}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <a asp-page="Messages" class="small text-decoration-none">← All messages</a>
+            <div class="panel mt-2">
+                <div class="panel-header">
+                    <div class="d-flex align-items-center gap-3 min-w-0">
+                        <div class="booking-thumb"><partial name="_ItemImage" model="(b.Item.ImagePath, b.Item.Category, b.Item.Title)" /></div>
+                        <div class="min-w-0">
+                            <a class="fw-bold text-body text-decoration-none d-block text-truncate" asp-page="/Items/Details" asp-route-id="@b.ItemId">@b.Item.Title</a>
+                            <span class="small text-muted">
+                                @(Model.IAmOwner ? "Renter" : "Owner"): <a asp-page="/Users/Profile" asp-route-id="@Model.Other.Id">@Model.Other.FullName</a>
+                                · @Display.DateRange(b.StartDate, b.EndDate) · @Display.Money(b.TotalPrice)
+                            </span>
+                        </div>
+                    </div>
+                    <partial name="_StatusBadge" model="b.Status" />
+                </div>
+
+                <div class="chat" aria-live="polite">
+                    @if (!string.IsNullOrEmpty(b.Message))
+                    {
+                        <div class="chat-msg @(Model.IAmOwner ? "theirs" : "mine")">
+                            <div class="bubble">@b.Message</div>
+                            <div class="meta">Booking request · @b.CreatedAt.ToString("d MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture) UTC</div>
+                        </div>
+                    }
+                    @foreach (var m in Model.Messages)
+                    {
+                        var mine = m.SenderId == Model.MyId;
+                        <div class="chat-msg @(mine ? "mine" : "theirs")">
+                            <div class="bubble">@m.Body</div>
+                            <div class="meta">@(mine ? "You" : m.Sender.FullName.Split(' ')[0]) · @m.SentAt.ToString("d MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture) UTC@(mine && m.ReadAt is not null ? " · Seen" : "")</div>
+                        </div>
+                    }
+                    @if (Model.Messages.Count == 0 && string.IsNullOrEmpty(b.Message))
+                    {
+                        <p class="text-muted text-center my-4">No messages yet. Say hi and agree on pick-up details.</p>
+                    }
+                    <span id="latest"></span>
+                </div>
+
+                @if (Model.IsClosed)
+                {
+                    <p class="text-muted p-3 mb-0 border-top">This request was declined, so the conversation is closed.</p>
+                }
+                else
+                {
+                    <form method="post" class="chat-form">
+                        <label asp-for="Body" class="visually-hidden">Message</label>
+                        <textarea asp-for="Body" class="form-control" rows="2" placeholder="Write a message…" maxlength="2000"></textarea>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                        <span asp-validation-for="Body" class="w-100"></span>
+                    </form>
+                }
+            </div>
+            <p class="small text-muted mt-2">For your safety, keep the conversation on Rentilo until you have met in person. Never share passwords or card details.</p>
+        </div>
+    </div>
+</div>

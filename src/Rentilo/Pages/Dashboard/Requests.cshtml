@@ -29,6 +29,7 @@
                 </div>
                 <form method="post" class="booking-actions">
                     <input type="hidden" name="bookingId" value="@b.Id" />
+                    <a class="btn btn-sm btn-soft" asp-page="/Bookings/Conversation" asp-route-id="@b.Id">Message</a>
                     <button class="btn btn-sm btn-primary" asp-page-handler="Accept">Accept</button>
                     <button class="btn btn-sm btn-outline-secondary" asp-page-handler="Decline" data-confirm="Decline this request?">Decline</button>
                 </form>
@@ -51,13 +52,14 @@
                     <span class="small text-muted">@b.Renter.FullName · @b.Renter.Email · @Display.DateRange(b.StartDate, b.EndDate) · @Display.Money(b.TotalPrice)</span>
                 </div>
                 <partial name="_StatusBadge" model="b.Status" />
-                @if (b.StartDate <= Model.Today)
-                {
-                    <form method="post" class="booking-actions">
-                        <input type="hidden" name="bookingId" value="@b.Id" />
+                <form method="post" class="booking-actions">
+                    <input type="hidden" name="bookingId" value="@b.Id" />
+                    <a class="btn btn-sm btn-soft" asp-page="/Bookings/Conversation" asp-route-id="@b.Id">Message</a>
+                    @if (b.StartDate <= Model.Today)
+                    {
                         <button class="btn btn-sm btn-soft" asp-page-handler="Complete">Mark as returned</button>
-                    </form>
-                }
+                    }
+                </form>
             </div>
         }
     </section>

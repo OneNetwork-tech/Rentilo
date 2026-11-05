@@ -35,6 +35,7 @@ services:
       Database__MigrateOnStartup: "true"
       Database__SeedDemoData: "${SEED_DEMO_DATA:-false}"
       Identity__RequireConfirmedAccount: "${REQUIRE_CONFIRMED_ACCOUNT:-false}"
+      Admin__Emails: "${ADMIN_EMAILS:-}"
       Email__Smtp__Host: "${SMTP_HOST:-}"
       Email__Smtp__Port: "${SMTP_PORT:-587}"
       Email__Smtp__EnableSsl: "${SMTP_ENABLE_SSL:-true}"

@@ -16,6 +16,28 @@
         </ol>
     </nav>
 
+    @if (item.IsHiddenByAdmin && (Model.IsOwner || Model.IsAdmin))
+    {
+        <div class="alert alert-danger moderation-banner" role="alert">
+            <strong>Hidden by a moderator.</strong> This listing isn't visible to others and can't be booked.
+            @if (!string.IsNullOrEmpty(item.ModerationNote)) { <br /><span>Reason: @item.ModerationNote</span> }
+        </div>
+    }
+    @if (Model.IsAdmin)
+    {
+        <form method="post" asp-page="/Admin/Items" asp-page-handler="@(item.IsHiddenByAdmin ? "Unhide" : "Hide")" class="d-flex gap-2 align-items-center mb-3 flex-wrap">
+            <input type="hidden" name="itemId" value="@item.Id" />
+            <input type="hidden" name="returnUrl" value="@HttpContext.Request.Path" />
+            <span class="badge text-bg-primary">Admin</span>
+            @if (!item.IsHiddenByAdmin)
+            {
+                <label class="visually-hidden" for="mod-note">Reason</label>
+                <input id="mod-note" name="note" class="form-control form-control-sm w-auto" placeholder="Reason shown to owner" maxlength="300" />
+            }
+            <button class="btn btn-sm @(item.IsHiddenByAdmin ? "btn-soft" : "btn-outline-danger")">@(item.IsHiddenByAdmin ? "Unhide listing" : "Hide listing")</button>
+        </form>
+    }
+
     <div class="row g-4 g-lg-5">
         <div class="col-lg-7">
             <div class="detail-media mb-4">
@@ -94,7 +116,7 @@
                         <a class="btn btn-soft" asp-page="/Dashboard/Requests">View booking requests</a>
                     </div>
                 }
-                else if (!item.IsAvailable)
+                else if (!item.IsListed)
                 {
                     <p class="text-muted mb-0">This item isn't available for rent right now.</p>
                 }
@@ -127,6 +149,10 @@
                     </form>
                 }
 
+                @if (!Model.IsOwner && item.IsListed && User.Identity?.IsAuthenticated == true)
+                {
+                    <p class="text-center small mt-3 mb-0"><a class="text-muted" asp-page="Report" asp-route-id="@item.Id">🚩 Report this listing</a></p>
+                }
                 @if (Model.BlockedRanges.Count > 0)
                 {
                     <hr />

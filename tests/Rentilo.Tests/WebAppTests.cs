@@ -26,6 +26,7 @@ public sealed class RentiloFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:DefaultConnection", "Host=unused");
         builder.UseSetting("Database:MigrateOnStartup", "false");
         builder.UseSetting("Database:SeedDemoData", "false");
+        builder.UseSetting("Admin:Emails", "anna@rentilo.dev");
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();

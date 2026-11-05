@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Rentilo.Data;
 using Rentilo.Models;
 using Rentilo.Services;
+using Rentilo.ViewModels;
 
 namespace Rentilo.Pages.Dashboard;
 
@@ -21,7 +22,7 @@ public class IndexModel(ApplicationDbContext db, BookingService bookings) : Dash
         var name = await Db.Users.Where(u => u.Id == UserId).Select(u => u.FullName).FirstOrDefaultAsync() ?? "";
         FirstName = name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "there";
 
-        ActiveListings = await Db.Items.CountAsync(i => i.OwnerId == UserId && i.IsAvailable);
+        ActiveListings = await Db.Items.Listed().CountAsync(i => i.OwnerId == UserId);
         UpcomingAsOwner = await Db.Bookings.CountAsync(b => b.Item.OwnerId == UserId && b.Status == BookingStatus.Accepted && b.EndDate >= today);
         // Sum client-side: keeps decimal precision on every provider.
         EarnedTotal = (await Db.Bookings

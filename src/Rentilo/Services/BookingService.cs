@@ -15,7 +15,7 @@ namespace Rentilo.Services;
 /// even under concurrent requests.</item>
 /// </list>
 /// </summary>
-public class BookingService(ApplicationDbContext db, TimeProvider clock, ILogger<BookingService> logger)
+public class BookingService(ApplicationDbContext db, TimeProvider clock, INotifier notifier, ILogger<BookingService> logger)
 {
     public const int MaxRentalDays = 60;
     public const int MaxDaysInAdvance = 365;
@@ -61,7 +61,7 @@ public class BookingService(ApplicationDbContext db, TimeProvider clock, ILogger
     {
         var item = await db.Items.FirstOrDefaultAsync(i => i.Id == itemId);
         if (item is null) return ServiceResult<Booking>.Fail("This item no longer exists.");
-        if (!item.IsAvailable) return ServiceResult<Booking>.Fail("This item is not available for rent right now.");
+        if (!item.IsListed) return ServiceResult<Booking>.Fail("This item is not available for rent right now.");
         if (item.OwnerId == renterId) return ServiceResult<Booking>.Fail("You can't rent your own item.");
 
         var dateError = ValidateDates(start, end);
@@ -89,6 +89,7 @@ public class BookingService(ApplicationDbContext db, TimeProvider clock, ILogger
         db.Bookings.Add(booking);
         await db.SaveChangesAsync();
         logger.LogInformation("Booking {BookingId} requested for item {ItemId}", booking.Id, itemId);
+        await notifier.BookingRequestedAsync(booking.Id);
         return ServiceResult<Booking>.Ok(booking);
     }
 
@@ -125,6 +126,10 @@ public class BookingService(ApplicationDbContext db, TimeProvider clock, ILogger
             logger.LogWarning(ex, "Conflict accepting booking {BookingId}", bookingId);
             return ServiceResult.Fail("These dates were just taken by another booking.");
         }
+
+        await notifier.BookingAcceptedAsync(booking.Id);
+        foreach (var other in overlappingPending)
+            await notifier.BookingDeclinedAsync(other.Id, automatically: true);
         return ServiceResult.Ok();
     }
 
@@ -133,7 +138,9 @@ public class BookingService(ApplicationDbContext db, TimeProvider clock, ILogger
         var booking = await LoadForOwnerAsync(bookingId, ownerId);
         if (booking is null) return ServiceResult.Fail("Booking not found.");
         if (booking.Status != BookingStatus.Pending) return ServiceResult.Fail("Only pending requests can be declined.");
-        return await SetStatusAsync(booking, BookingStatus.Declined);
+        var result = await SetStatusAsync(booking, BookingStatus.Declined);
+        await notifier.BookingDeclinedAsync(booking.Id);
+        return result;
     }
 
     public async Task<ServiceResult> CompleteAsync(int bookingId, string ownerId)
@@ -154,7 +161,9 @@ public class BookingService(ApplicationDbContext db, TimeProvider clock, ILogger
             return ServiceResult.Fail("This booking can no longer be cancelled.");
         if (booking.Status == BookingStatus.Accepted && booking.StartDate <= Today)
             return ServiceResult.Fail("A booking that has already started can't be cancelled.");
-        return await SetStatusAsync(booking, BookingStatus.Cancelled);
+        var result = await SetStatusAsync(booking, BookingStatus.Cancelled);
+        await notifier.BookingCancelledAsync(booking.Id);
+        return result;
     }
 
     public bool CanReview(Booking booking) =>

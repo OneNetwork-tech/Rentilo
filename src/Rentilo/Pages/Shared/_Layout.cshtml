@@ -1,9 +1,14 @@
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject MessageService MessageService
 @{
     var title = ViewData["Title"] as string;
     var description = ViewData["Description"] as string ?? "Rentilo – rent things from people near you instead of buying them.";
     var path = Context.Request.Path.Value ?? "/";
     string Active(string prefix) => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    var signedIn = SignInManager.IsSignedIn(User);
+    var unread = signedIn ? await MessageService.UnreadCountAsync(UserManager.GetUserId(User)!) : 0;
+    var isAdmin = signedIn && User.IsInRole(Rentilo.Services.Roles.Admin);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -32,10 +37,19 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto gap-lg-1 mt-2 mt-lg-0">
                         <li class="nav-item"><a class="nav-link @Active("/Items")" asp-area="" asp-page="/Items/Index">Browse</a></li>
-                        @if (SignInManager.IsSignedIn(User))
+                        @if (signedIn)
                         {
                             <li class="nav-item"><a class="nav-link @Active("/Dashboard")" asp-area="" asp-page="/Dashboard/Index">Dashboard</a></li>
-                            <li class="nav-item"><a class="nav-link @Active("/Bookings")" asp-area="" asp-page="/Bookings/Index">My rentals</a></li>
+                            <li class="nav-item"><a class="nav-link @(path.StartsWith("/Bookings", StringComparison.OrdinalIgnoreCase) && !path.Contains("Messages", StringComparison.OrdinalIgnoreCase) && !path.Contains("Conversation", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-area="" asp-page="/Bookings/Index">My rentals</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link @Active("/Bookings/Messages") @Active("/Bookings/Conversation")" asp-area="" asp-page="/Bookings/Messages">
+                                    Messages @if (unread > 0) { <span class="badge rounded-pill text-bg-danger nav-badge" aria-label="@unread unread">@unread</span> }
+                                </a>
+                            </li>
+                            @if (isAdmin)
+                            {
+                                <li class="nav-item"><a class="nav-link @Active("/Admin")" asp-area="" asp-page="/Admin/Index">Admin</a></li>
+                            }
                         }
                         <li class="nav-item"><a class="nav-link @Active("/HowItWorks")" asp-area="" asp-page="/HowItWorks">How it works</a></li>
                     </ul>

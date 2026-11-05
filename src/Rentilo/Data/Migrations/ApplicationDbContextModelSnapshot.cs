@@ -313,10 +313,17 @@ namespace Rentilo.Data.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsHiddenByAdmin")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ModerationNote")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("OwnerId")
                         .IsRequired()
@@ -339,6 +346,89 @@ namespace Rentilo.Data.Migrations
                     b.HasIndex("IsAvailable", "Category");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("Rentilo.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderId");
+
+                    b.HasIndex("BookingId", "SentAt");
+
+                    b.HasIndex("ReadAt", "SenderId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("Rentilo.Models.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Reason")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReporterId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Resolution")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ResolvedById")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ReporterId");
+
+                    b.HasIndex("ResolvedAt");
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("Rentilo.Models.Review", b =>
@@ -465,6 +555,44 @@ namespace Rentilo.Data.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Rentilo.Models.Message", b =>
+                {
+                    b.HasOne("Rentilo.Models.Booking", "Booking")
+                        .WithMany("Messages")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rentilo.Models.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("Rentilo.Models.Report", b =>
+                {
+                    b.HasOne("Rentilo.Models.Item", "Item")
+                        .WithMany("Reports")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rentilo.Models.ApplicationUser", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Reporter");
+                });
+
             modelBuilder.Entity("Rentilo.Models.Review", b =>
                 {
                     b.HasOne("Rentilo.Models.ApplicationUser", "Author")
@@ -501,12 +629,16 @@ namespace Rentilo.Data.Migrations
 
             modelBuilder.Entity("Rentilo.Models.Booking", b =>
                 {
+                    b.Navigation("Messages");
+
                     b.Navigation("Review");
                 });
 
             modelBuilder.Entity("Rentilo.Models.Item", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("Reviews");
                 });

@@ -10,6 +10,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Item> Items => Set<Item>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<Report> Reports => Set<Report>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -25,6 +27,35 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(i => new { i.IsAvailable, i.Category });
             e.HasIndex(i => i.DateListed);
+            e.Ignore(i => i.IsListed);
+        });
+
+        builder.Entity<Message>(e =>
+        {
+            e.HasOne(m => m.Booking)
+                .WithMany(b => b.Messages)
+                .HasForeignKey(m => m.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(m => new { m.BookingId, m.SentAt });
+            e.HasIndex(m => new { m.ReadAt, m.SenderId });
+        });
+
+        builder.Entity<Report>(e =>
+        {
+            e.HasOne(r => r.Item)
+                .WithMany(i => i.Reports)
+                .HasForeignKey(r => r.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(r => r.Reporter)
+                .WithMany()
+                .HasForeignKey(r => r.ReporterId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(r => r.ResolvedAt);
+            e.Ignore(r => r.IsOpen);
         });
 
         builder.Entity<Booking>(e =>

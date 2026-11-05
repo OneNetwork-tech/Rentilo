@@ -3,7 +3,11 @@
     <div class="item-media">
         <partial name="_ItemImage" model="(Model.ImagePath, Model.Category, Model.Title)" />
         <span class="tag">@Model.Category.Icon() @Model.Category.Name()</span>
-        @if (!Model.IsAvailable)
+        @if (Model.IsHiddenByAdmin)
+        {
+            <span class="tag tag-unavailable">Hidden by moderator</span>
+        }
+        else if (!Model.IsAvailable)
         {
             <span class="tag tag-unavailable">Paused</span>
         }

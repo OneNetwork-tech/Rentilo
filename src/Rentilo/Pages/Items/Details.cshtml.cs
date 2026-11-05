@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Rentilo.Data;
 using Rentilo.Models;
 using Rentilo.Services;
+using Rentilo.ViewModels;
 
 namespace Rentilo.Pages.Items;
 
@@ -17,6 +18,7 @@ public class DetailsModel(ApplicationDbContext db, BookingService bookings, User
     public List<(DateOnly Start, DateOnly End)> BlockedRanges { get; private set; } = [];
     public int OwnerItemCount { get; private set; }
     public bool IsOwner { get; private set; }
+    public bool IsAdmin => User.IsInRole(Roles.Admin);
     public DateOnly Today => bookings.Today;
 
     [BindProperty] public BookingInput Input { get; set; } = new();
@@ -36,8 +38,8 @@ public class DetailsModel(ApplicationDbContext db, BookingService bookings, User
     public async Task<IActionResult> OnGetAsync(int id)
     {
         if (!await LoadAsync(id)) return NotFound();
-        // Hidden listings are only visible to their owner.
-        if (!Item.IsAvailable && !IsOwner) return NotFound();
+        // Paused or moderated listings are only visible to their owner and admins.
+        if (!Item.IsListed && !IsOwner && !IsAdmin) return NotFound();
         Input.StartDate ??= Today.AddDays(1);
         Input.EndDate ??= Today.AddDays(2);
         return Page();
@@ -72,7 +74,7 @@ public class DetailsModel(ApplicationDbContext db, BookingService bookings, User
             .Where(r => r.ItemId == id).OrderByDescending(r => r.CreatedAt).Take(20).ToListAsync();
         AverageRating = await db.Reviews.Where(r => r.ItemId == id).AverageAsync(r => (double?)r.Rating);
         BlockedRanges = await bookings.GetBlockedRangesAsync(id);
-        OwnerItemCount = await db.Items.CountAsync(i => i.OwnerId == item.OwnerId && i.IsAvailable);
+        OwnerItemCount = await db.Items.Listed().CountAsync(i => i.OwnerId == item.OwnerId);
         return true;
     }
 }

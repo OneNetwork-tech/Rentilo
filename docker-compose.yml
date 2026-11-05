@@ -24,6 +24,7 @@ services:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=rentilo;Username=rentilo;Password=${POSTGRES_PASSWORD:-rentilo-dev-password};Gss Encryption Mode=Disable"
       Database__MigrateOnStartup: "true"
       Database__SeedDemoData: "${SEED_DEMO_DATA:-true}"
+      Admin__Emails: "${ADMIN_EMAILS:-anna@rentilo.dev}"
     ports:
       - "8080:8080"
     volumes:

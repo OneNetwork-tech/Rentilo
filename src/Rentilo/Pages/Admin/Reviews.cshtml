@@ -1,0 +1,29 @@
+@page
+@model Rentilo.Pages.Admin.ReviewsModel
+@{
+    ViewData["Title"] = "Admin · Reviews";
+}
+<div class="container">
+    <partial name="_AdminNav" />
+    <section class="panel">
+        @if (Model.Reviews.Count == 0)
+        {
+            <p class="text-muted p-4 mb-0">No reviews yet.</p>
+        }
+        @foreach (var r in Model.Reviews)
+        {
+            <div class="booking-row align-items-start">
+                <div class="booking-info">
+                    <span class="stars">@(new string('★', r.Rating))@(new string('☆', 5 - r.Rating))</span>
+                    <strong class="ms-1">@r.Author.FullName</strong> on <a asp-page="/Items/Details" asp-route-id="@r.ItemId">@r.Item.Title</a>
+                    @if (!string.IsNullOrEmpty(r.Comment)) { <p class="mb-0 mt-1">@r.Comment</p> }
+                    <small class="text-muted">@r.CreatedAt.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</small>
+                </div>
+                <form method="post" asp-page-handler="Delete">
+                    <input type="hidden" name="reviewId" value="@r.Id" />
+                    <button class="btn btn-sm btn-outline-danger" data-confirm="Delete this review?">Delete</button>
+                </form>
+            </div>
+        }
+    </section>
+</div>

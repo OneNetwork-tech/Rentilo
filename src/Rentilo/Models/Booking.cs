@@ -38,6 +38,8 @@ public class Booking
 
     public Review? Review { get; set; }
 
+    public ICollection<Message> Messages { get; set; } = new List<Message>();
+
     public int Days => EndDate.DayNumber - StartDate.DayNumber + 1;
 }
 

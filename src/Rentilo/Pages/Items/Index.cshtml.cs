@@ -25,7 +25,7 @@ public class IndexModel(ApplicationDbContext db) : PageModel
 
     public async Task OnGetAsync()
     {
-        var query = db.Items.AsNoTracking().Where(i => i.IsAvailable);
+        var query = db.Items.AsNoTracking().Listed();
 
         if (!string.IsNullOrWhiteSpace(Q))
         {

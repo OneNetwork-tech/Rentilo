@@ -10,10 +10,11 @@ public class BookingServiceTests : IDisposable
     private static readonly DateOnly Today = new(2026, 6, 15);
     private readonly TestDb _db = new();
     private readonly FixedClock _clock = new(new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero));
+    private readonly RecordingNotifier _notifier = new();
     private readonly BookingService _service;
 
     public BookingServiceTests() =>
-        _service = new BookingService(_db.Context, _clock, NullLogger<BookingService>.Instance);
+        _service = new BookingService(_db.Context, _clock, _notifier, NullLogger<BookingService>.Instance);
 
     public void Dispose() => _db.Dispose();
 
@@ -191,5 +192,44 @@ public class BookingServiceTests : IDisposable
         var ranges = await _service.GetBlockedRangesAsync(_db.Item.Id);
 
         Assert.Equal([(Today.AddDays(5), Today.AddDays(6))], ranges);
+    }
+
+    [Fact]
+    public async Task Notifications_follow_the_booking_lifecycle()
+    {
+        var a = (await Request(1, 3)).Value!;
+        var overlapping = (await Request(2, 4, renter: _db.Other.Id)).Value!;
+        Assert.Equal([$"requested:{a.Id}", $"requested:{overlapping.Id}"], _notifier.Events);
+
+        _notifier.Events.Clear();
+        await _service.AcceptAsync(a.Id, _db.Owner.Id);
+        Assert.Equal([$"accepted:{a.Id}", $"declined-auto:{overlapping.Id}"], _notifier.Events);
+
+        _notifier.Events.Clear();
+        await _service.CancelAsync(a.Id, _db.Renter.Id);
+        Assert.Equal([$"cancelled:{a.Id}"], _notifier.Events);
+
+        var b = (await Request(10, 11)).Value!;
+        _notifier.Events.Clear();
+        await _service.DeclineAsync(b.Id, _db.Owner.Id);
+        Assert.Equal([$"declined:{b.Id}"], _notifier.Events);
+    }
+
+    [Fact]
+    public async Task Failed_actions_send_no_notifications()
+    {
+        await Request(-1, 1); // invalid dates
+        var b = (await Request(1, 2)).Value!;
+        _notifier.Events.Clear();
+        await _service.AcceptAsync(b.Id, _db.Renter.Id); // not the owner
+        Assert.Empty(_notifier.Events);
+    }
+
+    [Fact]
+    public async Task Hidden_items_cannot_be_booked()
+    {
+        _db.Item.IsHiddenByAdmin = true;
+        await _db.Context.SaveChangesAsync();
+        Assert.False((await Request(1, 2)).Succeeded);
     }
 }

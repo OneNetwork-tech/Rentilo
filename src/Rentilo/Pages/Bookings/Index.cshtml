@@ -24,7 +24,7 @@
                     <span class="small text-muted">@Display.DateRange(b.StartDate, b.EndDate) (@Display.Days(b.Days)) · @Display.Money(b.TotalPrice) · from @b.Item.Owner.FullName</span>
                     @if (b.Status == BookingStatus.Accepted)
                     {
-                        <div class="small mt-1">📍 @b.Item.Location · Contact: <a href="mailto:@b.Item.Owner.Email">@b.Item.Owner.Email</a></div>
+                        <div class="small mt-1">📍 @b.Item.Location · Contact: <a asp-page="/Bookings/Conversation" asp-route-id="@b.Id">message</a> or <a href="mailto:@b.Item.Owner.Email">@b.Item.Owner.Email</a></div>
                     }
                     else
                     {
@@ -32,13 +32,16 @@
                     }
                 </div>
                 <partial name="_StatusBadge" model="b.Status" />
-                @if (b.Status == BookingStatus.Pending || b.StartDate > Model.Today)
-                {
-                    <form method="post" asp-page-handler="Cancel" class="booking-actions">
-                        <input type="hidden" name="bookingId" value="@b.Id" />
-                        <button class="btn btn-sm btn-outline-secondary" data-confirm="Cancel this booking?">@(b.Status == BookingStatus.Pending ? "Withdraw" : "Cancel")</button>
-                    </form>
-                }
+                <div class="booking-actions">
+                    <a class="btn btn-sm btn-soft" asp-page="/Bookings/Conversation" asp-route-id="@b.Id">Message</a>
+                    @if (b.Status == BookingStatus.Pending || b.StartDate > Model.Today)
+                    {
+                        <form method="post" asp-page-handler="Cancel">
+                            <input type="hidden" name="bookingId" value="@b.Id" />
+                            <button class="btn btn-sm btn-outline-secondary" data-confirm="Cancel this booking?">@(b.Status == BookingStatus.Pending ? "Withdraw" : "Cancel")</button>
+                        </form>
+                    }
+                </div>
             </div>
         }
     </section>

@@ -13,6 +13,7 @@
             <li><a class="dropdown-item" asp-area="" asp-page="/Dashboard/Index">Dashboard</a></li>
             <li><a class="dropdown-item" asp-area="" asp-page="/Dashboard/Listings">My listings</a></li>
             <li><a class="dropdown-item" asp-area="" asp-page="/Bookings/Index">My rentals</a></li>
+            <li><a class="dropdown-item" asp-area="" asp-page="/Bookings/Messages">Messages</a></li>
             @if (user is not null)
             {
                 <li><a class="dropdown-item" asp-area="" asp-page="/Users/Profile" asp-route-id="@user.Id">Public profile</a></li>

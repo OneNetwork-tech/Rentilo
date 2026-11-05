@@ -1,0 +1,42 @@
+@page
+@model Rentilo.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Admin · Users";
+}
+<div class="container">
+    <partial name="_AdminNav" />
+    <form method="get" class="d-flex gap-2 mb-3" role="search">
+        <label class="visually-hidden" for="q">Search</label>
+        <input id="q" name="q" value="@Model.Q" class="form-control" placeholder="Name or email" />
+        <button class="btn btn-primary">Search</button>
+    </form>
+    <section class="panel">
+        @foreach (var row in Model.Users)
+        {
+            var u = row.User;
+            <div class="booking-row">
+                <span class="avatar" aria-hidden="true">@u.Initials</span>
+                <div class="booking-info">
+                    <a class="fw-bold text-body" asp-page="/Users/Profile" asp-route-id="@u.Id">@u.FullName</a>
+                    @if (row.IsAdmin) { <span class="badge text-bg-primary ms-1">Admin</span> }
+                    @if (row.IsLocked) { <span class="badge text-bg-danger ms-1">Locked</span> }
+                    <span class="small text-muted d-block">@u.Email · joined @u.DateJoined.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) · @row.Listings listings · @row.Rentals rentals</span>
+                </div>
+                @if (row.IsLocked)
+                {
+                    <form method="post" asp-page-handler="Unlock" asp-route-q="@Model.Q">
+                        <input type="hidden" name="userId" value="@u.Id" />
+                        <button class="btn btn-sm btn-soft">Unlock</button>
+                    </form>
+                }
+                else if (!row.IsAdmin)
+                {
+                    <form method="post" asp-page-handler="Lock" asp-route-q="@Model.Q">
+                        <input type="hidden" name="userId" value="@u.Id" />
+                        <button class="btn btn-sm btn-outline-danger" data-confirm="Lock @u.FullName out of Rentilo?">Lock</button>
+                    </form>
+                }
+            </div>
+        }
+    </section>
+</div>

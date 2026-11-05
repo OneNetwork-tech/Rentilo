@@ -37,6 +37,16 @@ public class Item
     [Display(Name = "Available for rent")]
     public bool IsAvailable { get; set; } = true;
 
+    /// <summary>Set by a moderator: the listing is hidden from everyone but its owner and can't be booked.</summary>
+    public bool IsHiddenByAdmin { get; set; }
+
+    /// <summary>Moderator's reason, shown to the owner.</summary>
+    [StringLength(300)]
+    public string? ModerationNote { get; set; }
+
+    /// <summary>Visible in search and bookable.</summary>
+    public bool IsListed => IsAvailable && !IsHiddenByAdmin;
+
     public string OwnerId { get; set; } = string.Empty;
 
     public ApplicationUser Owner { get; set; } = null!;
@@ -44,4 +54,6 @@ public class Item
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+    public ICollection<Report> Reports { get; set; } = new List<Report>();
 }

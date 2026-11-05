@@ -21,7 +21,7 @@ public class ProfileModel(ApplicationDbContext db) : PageModel
         var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
         if (user is null) return NotFound();
         Profile = user;
-        Items = await db.Items.AsNoTracking().Where(i => i.OwnerId == id && i.IsAvailable)
+        Items = await db.Items.AsNoTracking().Listed().Where(i => i.OwnerId == id)
             .OrderByDescending(i => i.DateListed).ToCards().ToListAsync();
         var reviews = db.Reviews.Where(r => r.Item.OwnerId == id);
         Rating = await reviews.AverageAsync(r => (double?)r.Rating);

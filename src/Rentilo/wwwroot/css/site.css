@@ -332,3 +332,21 @@ h5, h6, .h5, .h6 { font-weight: 650; }
   .item-media .tag { font-size: .65rem; }
   .section { padding: 2.5rem 0; }
 }
+
+/* ---- Messages ------------------------------------------------------------------------ */
+.min-w-0 { min-width: 0; }
+.chat { padding: 1.25rem; display: flex; flex-direction: column; gap: .9rem; max-height: 60vh; overflow-y: auto; }
+.chat-msg { max-width: 80%; display: flex; flex-direction: column; }
+.chat-msg.mine { align-self: flex-end; align-items: flex-end; }
+.chat-msg.theirs { align-self: flex-start; }
+.chat-msg .bubble { padding: .6rem .9rem; border-radius: 16px; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.45; }
+.chat-msg.mine .bubble { background: var(--rl-brand); color: #fff; border-bottom-right-radius: 4px; }
+[data-bs-theme="dark"] .chat-msg.mine .bubble { color: #0b1512; }
+.chat-msg.theirs .bubble { background: var(--bs-tertiary-bg); border-bottom-left-radius: 4px; }
+.chat-msg .meta { font-size: .72rem; color: var(--rl-muted); margin-top: .2rem; }
+.chat-form { display: flex; gap: .5rem; align-items: flex-end; flex-wrap: wrap; padding: 1rem 1.25rem; border-top: 1px solid var(--rl-line); }
+.chat-form textarea { flex: 1 1 240px; resize: vertical; }
+.conversation-row.unread strong { color: var(--rl-brand-strong); }
+.conversation-row:hover { background: var(--bs-tertiary-bg); }
+.admin-actions { min-width: min(100%, 320px); }
+.moderation-banner { border-radius: 12px; }

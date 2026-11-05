@@ -91,6 +91,7 @@ Settings live in `~/rentilo/.env` on the server. It is created on the first depl
 | `SEED_DEMO_DATA` | `true` to create demo users and listings on an empty database |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Outgoing email. Leave `SMTP_HOST` empty to only write emails to the log. |
 | `REQUIRE_CONFIRMED_ACCOUNT` | `true` once email works, to require email confirmation |
+| `ADMIN_EMAILS` | Comma-separated emails of users who get the Admin role (moderation area at `/Admin`) |
 | `BACKUP_KEEP_DAYS` | How many days of backups to keep |
 
 After editing it, apply the changes:

@@ -13,6 +13,9 @@ Built with **ASP.NET Core 10 Razor Pages**, **ASP.NET Core Identity**, **EF Core
   Accepting a request automatically declines other pending requests for the same dates.
 - **No double bookings**: enforced in the application *and* by a PostgreSQL exclusion constraint, so it also holds under concurrent requests.
 - **My rentals**: withdraw or cancel a booking (until the day it starts), then leave a 1–5★ review once the rental is over.
+- **Messages**: every booking has its own conversation between renter and owner, with unread badges and read receipts.
+- **Email notifications** for new requests, accepted/declined requests, cancellations and new messages. They are sent in the background, so a slow mail server never blocks the app.
+- **Moderation**: users can report listings. Admins (configured by email) get `/Admin`, where they can work the reports queue, hide or unhide listings with a note to the owner, lock or unlock users and delete reviews.
 - **Public profiles** with listings and average rating.
 - **Accounts**: registration, login with lockout, profile, email and password changes, 2FA, personal data download, and full account deletion.
 - **Design**: responsive, light and dark theme, accessible markup, and a strict Content-Security-Policy.
@@ -73,6 +76,9 @@ The `InitialCreate` migration enables the `btree_gist` extension, which is trust
 | `ConnectionStrings:DefaultConnection` | — (required) | PostgreSQL connection string. Set it with user secrets or `ConnectionStrings__DefaultConnection`. |
 | `Database:MigrateOnStartup` | `false` (`true` in Development) | Apply EF migrations when the app starts. |
 | `Database:SeedDemoData` | `false` (`true` in Development) | Create demo users and listings if the database has no items. |
+| `Admin:Emails` | empty (`anna@rentilo.dev` in Development) | Comma-separated emails that get the Admin role, applied at startup and on registration. |
+| `App:BaseUrl` | empty | Public URL used in email links when no web request is available. |
+| `DataProtection:KeysPath` | empty (`/app/keys` in Docker) | Folder where login-cookie keys are kept, so restarts don't sign users out. |
 | `Identity:RequireConfirmedAccount` | `false` | Require email confirmation before login. Turn this on once SMTP is configured. |
 | `Email:Smtp:Host` / `Port` / `EnableSsl` / `UserName` / `Password` / `From` | empty | SMTP settings for confirmation and password-reset mail. If `Host` is empty, emails are written to the log instead. |
 
@@ -84,10 +90,11 @@ Health check: `GET /healthz` (includes a database check).
 src/Rentilo/
   Data/              DbContext, migrations, demo seed data
   Models/            Item, Booking, Review, ApplicationUser, enums
-  Services/          BookingService (all booking rules), image storage, email, account deletion
+  Services/          BookingService (booking rules), MessageService, ModerationService,
+                     EmailNotifier + background email queue, image storage, account deletion
   Infrastructure/    Security headers middleware
   ViewModels/        Item cards, form models, pagination
-  Pages/             Razor Pages: Items, Bookings, Dashboard, Users, static pages
+  Pages/             Razor Pages: Items, Bookings (incl. messages), Dashboard, Admin, Users, static pages
   Areas/Identity/    Customised Identity pages (login, register, account settings)
   wwwroot/           CSS design system, JS, vendored Bootstrap 5.3 / jQuery 3.7
 tests/Rentilo.Tests/ Unit tests (booking rules, helpers) and integration tests (WebApplicationFactory)
